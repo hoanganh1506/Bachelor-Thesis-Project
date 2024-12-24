@@ -1,0 +1,1907 @@
+[
+    {
+        "id": "a46b2f276f836896",
+        "type": "tab",
+        "label": "Hệ thống bãi đỗ xe thông minh",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bbb47481054e7001",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Filter Data cho quản lý",
+        "func": "let data = msg.payload;\nlet tableData = [];\n\n// Chuyển đổi dữ liệu Firebase thành định dạng bảng và lọc các giá trị UID null\nfor (let card in data) {\n    if (data.hasOwnProperty(card)) {\n        let entry = data[card].Entry || {};\n        let exit = data[card].Exit || {};\n        let cardInfo = data[card].CardInformation || {};\n        let uid = data[card].UID;\n\n        // Chỉ thêm vào tableData nếu UID không phải là null\n        if (uid && uid !== \"Null\") {\n            tableData.push({\n                Card: card,\n                Balance: data[card].Balance || \"\",\n                CardType: cardInfo.CardType || \"\",\n                BrandOfVehicle: cardInfo.BrandOfVehicle || \"\",\n                Plate: cardInfo.Plate || \"\",\n                TypeOfVehicle: cardInfo.TypeOfVehicle || \"\",\n                EntryDate: entry.Date || \"\",\n                EntryTime: entry.Time || \"\",\n                ExitDate: exit.Date || \"\",\n                ExitTime: exit.Time || \"\",\n                IsVehicleIn: data[card].IsVehicleIn || false,\n                UID: uid\n            });\n        }\n    }\n}\n\nmsg.payload = tableData;\nflow.set('cards', tableData);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1420,
+        "y": 680,
+        "wires": [
+            [
+                "fef07423cbcf4a25"
+            ]
+        ]
+    },
+    {
+        "id": "fef07423cbcf4a25",
+        "type": "ui_table",
+        "z": "a46b2f276f836896",
+        "group": "15a5d5c004e9cf74",
+        "name": "Danh sách thẻ dành cho quản lý",
+        "order": 1,
+        "width": 30,
+        "height": 3,
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 1790,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "2d25cffe844cc28e",
+        "type": "ui_form",
+        "z": "a46b2f276f836896",
+        "name": "Nhập thông tin khách hàng",
+        "label": "",
+        "group": "cf9a5e5dc2293733",
+        "order": 9,
+        "width": "12",
+        "height": "1",
+        "options": [
+            {
+                "label": "Card",
+                "value": "Card",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "CardType",
+                "value": "CardType",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "BrandOfVehicle",
+                "value": "BrandOfVehicle",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Plate",
+                "value": "Plate",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "TypeOfVehicle",
+                "value": "TypeOfVehicle",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Balance",
+                "value": "Balance",
+                "type": "text",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "Card": "",
+            "CardType": "",
+            "BrandOfVehicle": "",
+            "Plate": "",
+            "TypeOfVehicle": "",
+            "Balance": ""
+        },
+        "payload": "{}",
+        "submit": "Nhập thông tin",
+        "cancel": "Hủy",
+        "topic": "",
+        "topicType": "str",
+        "splitLayout": false,
+        "className": "",
+        "x": 600,
+        "y": 860,
+        "wires": [
+            [
+                "e1661d0cccf6e429"
+            ]
+        ]
+    },
+    {
+        "id": "e1661d0cccf6e429",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hàm nhập thông tin khách hàng",
+        "func": "let formData = msg.payload;\nlet card = formData.Card;\nlet cardType = formData.CardType;\nlet plate = formData.Plate;\nlet brandOfVehicle = formData.BrandOfVehicle;\nlet typeOfVehicle = formData.TypeOfVehicle;\nlet balance = parseInt(formData.Balance, 10); // Chuyển đổi Balance sang int\n\n// Kiểm tra nếu balance không phải là một số hợp lệ\nif (isNaN(balance)) {\n    balance = 0; // Hoặc xử lý lỗi theo cách khác nếu cần\n}\n// Update Firebase with new information\nlet updatePayload = {};\nupdatePayload[card + \"/CardInformation/CardType\"] = cardType;\nupdatePayload[card + \"/CardInformation/Plate\"] = plate;\nupdatePayload[card + \"/CardInformation/BrandOfVehicle\"] = brandOfVehicle;\nupdatePayload[card + \"/CardInformation/TypeOfVehicle\"] = typeOfVehicle;\nupdatePayload[card + \"/Balance\"] = balance;\n\nmsg.payload = updatePayload;\nmsg.database = \"https://parkingsystem-68bbf-default-rtdb.firebaseio.com/\";\nmsg.collection = \"RFID/Cards\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 860,
+        "wires": [
+            [
+                "9646daa6e2d04960"
+            ]
+        ]
+    },
+    {
+        "id": "8abddf22b2ab856b",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/Cards",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 760,
+        "y": 680,
+        "wires": [
+            [
+                "bbb47481054e7001"
+            ]
+        ]
+    },
+    {
+        "id": "9646daa6e2d04960",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/Cards",
+        "method": "update",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 1610,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "67513f9e3e12c213",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/IsMasterDefined",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 790,
+        "y": 1060,
+        "wires": [
+            [
+                "67cdb3d33575da0d"
+            ]
+        ]
+    },
+    {
+        "id": "67cdb3d33575da0d",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "0c800735780aa456",
+        "order": 1,
+        "width": "12",
+        "height": "1",
+        "name": "",
+        "label": "Is Master Defined",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1790,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "66cea7599308948a",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/UpdateModeStatus",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 800,
+        "y": 1140,
+        "wires": [
+            [
+                "4b774572c7ade0df"
+            ]
+        ]
+    },
+    {
+        "id": "4b774572c7ade0df",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "0c800735780aa456",
+        "order": 2,
+        "width": "12",
+        "height": "1",
+        "name": "",
+        "label": "Update Mode Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1780,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "db13d233b9d5da91",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/EntryStatus",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 770,
+        "y": 1220,
+        "wires": [
+            [
+                "0db0a478aec07d16"
+            ]
+        ]
+    },
+    {
+        "id": "0db0a478aec07d16",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "1f4c667463f47869",
+        "order": 1,
+        "width": 8,
+        "height": 1,
+        "name": "",
+        "label": "Entry Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1810,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "b987ea1f6b5626da",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/OpenOutRequest",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 1440,
+        "y": 1460,
+        "wires": [
+            [
+                "d951617a4e5d9a87"
+            ]
+        ]
+    },
+    {
+        "id": "2a54befc4804e66d",
+        "type": "ui_button",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "2623e65f3637f1aa",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "Mở barrier cửa ra",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 570,
+        "y": 1460,
+        "wires": [
+            [
+                "560d6d51b228f52a"
+            ]
+        ]
+    },
+    {
+        "id": "d951617a4e5d9a87",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 20",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1880,
+        "y": 1460,
+        "wires": []
+    },
+    {
+        "id": "560d6d51b228f52a",
+        "type": "change",
+        "z": "a46b2f276f836896",
+        "name": "Ấn nút thì thành true",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 860,
+        "y": 1460,
+        "wires": [
+            [
+                "b987ea1f6b5626da"
+            ]
+        ]
+    },
+    {
+        "id": "cd043d4e5141dbb9",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/OpenInRequest",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 1430,
+        "y": 1380,
+        "wires": [
+            [
+                "8f2132fd5450f73c"
+            ]
+        ]
+    },
+    {
+        "id": "808e0a409d30c4f6",
+        "type": "ui_button",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "2623e65f3637f1aa",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "Mở barrier cửa vào",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 570,
+        "y": 1380,
+        "wires": [
+            [
+                "eb6084a26c65aca4"
+            ]
+        ]
+    },
+    {
+        "id": "8f2132fd5450f73c",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 22",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1880,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "eb6084a26c65aca4",
+        "type": "change",
+        "z": "a46b2f276f836896",
+        "name": "Ấn nút thì thành true",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 860,
+        "y": 1380,
+        "wires": [
+            [
+                "cd043d4e5141dbb9"
+            ]
+        ]
+    },
+    {
+        "id": "1bfd8decf1c73d6a",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/ExitStatus",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 770,
+        "y": 1300,
+        "wires": [
+            [
+                "7514ea193184e600"
+            ]
+        ]
+    },
+    {
+        "id": "7514ea193184e600",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "1f4c667463f47869",
+        "order": 2,
+        "width": 8,
+        "height": 1,
+        "name": "",
+        "label": "Exit Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1810,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "ed77e40227ab260a",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "/Instruction",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 990,
+        "y": 1600,
+        "wires": [
+            [
+                "f9eac8f0b55d0813"
+            ]
+        ]
+    },
+    {
+        "id": "8299c62927eacdbf",
+        "type": "ui_button",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "4e306d9e897b4333",
+        "order": 1,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Zone A",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "ZoneA",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 520,
+        "y": 1600,
+        "wires": [
+            [
+                "ed77e40227ab260a",
+                "b1f4f39690aed177"
+            ]
+        ]
+    },
+    {
+        "id": "47d17f21609e0f15",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "4e306d9e897b4333",
+        "order": 5,
+        "width": 8,
+        "height": 1,
+        "name": "",
+        "label": "Hiển thị chỉ dẫn",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1420,
+        "y": 1980,
+        "wires": []
+    },
+    {
+        "id": "b1f4f39690aed177",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Instruction ",
+        "func": "var input = msg.payload;\nvar stringinput = input.toString();\n\nif (stringinput === \"ZoneA\")\n{\n    msg.payload = \"Chỉ dẫn tới Zone A\";\n}\nelse if (stringinput === \"ZoneB\")\n{\n    msg.payload = \"Chỉ dẫn tới Zone B\";\n}\nelse if (stringinput === \"ZoneC\")\n{\n    msg.payload = \"Chỉ dẫn tới Zone C\";\n}\nelse if (stringinput === \"Remove\")  \n{\n    msg.payload = \"Xóa chỉ dẫn\";\n}\nelse console.log(stringinput);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 1980,
+        "wires": [
+            [
+                "47d17f21609e0f15"
+            ]
+        ]
+    },
+    {
+        "id": "f9eac8f0b55d0813",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 23",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1400,
+        "y": 1600,
+        "wires": []
+    },
+    {
+        "id": "32cfbfb143de9373",
+        "type": "ui_button",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "4e306d9e897b4333",
+        "order": 2,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Zone B",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "ZoneB",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 520,
+        "y": 1700,
+        "wires": [
+            [
+                "a4960bd9aed7dc70",
+                "b1f4f39690aed177"
+            ]
+        ]
+    },
+    {
+        "id": "c28f93a9c21c2403",
+        "type": "ui_button",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "4e306d9e897b4333",
+        "order": 3,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Zone C",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "ZoneC",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 520,
+        "y": 1780,
+        "wires": [
+            [
+                "0723c7409817d013",
+                "b1f4f39690aed177"
+            ]
+        ]
+    },
+    {
+        "id": "a4960bd9aed7dc70",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "/Instruction",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 990,
+        "y": 1700,
+        "wires": [
+            [
+                "536a5e62988146fd"
+            ]
+        ]
+    },
+    {
+        "id": "0723c7409817d013",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "/Instruction",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 990,
+        "y": 1780,
+        "wires": [
+            [
+                "3332b2c69b9150ac"
+            ]
+        ]
+    },
+    {
+        "id": "536a5e62988146fd",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 24",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1400,
+        "y": 1700,
+        "wires": []
+    },
+    {
+        "id": "3332b2c69b9150ac",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 25",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1400,
+        "y": 1780,
+        "wires": []
+    },
+    {
+        "id": "03966c15185fa713",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "/Instruction",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 990,
+        "y": 1860,
+        "wires": [
+            [
+                "3a2d3b6d8d0ec546"
+            ]
+        ]
+    },
+    {
+        "id": "d448b081bc324941",
+        "type": "ui_button",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "4e306d9e897b4333",
+        "order": 4,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Xóa chỉ dẫn",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "Remove",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 530,
+        "y": 1860,
+        "wires": [
+            [
+                "03966c15185fa713",
+                "b1f4f39690aed177"
+            ]
+        ]
+    },
+    {
+        "id": "3a2d3b6d8d0ec546",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 26",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1400,
+        "y": 1860,
+        "wires": []
+    },
+    {
+        "id": "0246b6d2bcd8de99",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "/Monitor/DHT11",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 2430,
+        "y": 1180,
+        "wires": [
+            [
+                "7ff2d51a62f20d2a",
+                "9519904812ba53c6",
+                "d89da24ec3ddcb0a"
+            ]
+        ]
+    },
+    {
+        "id": "0f335957027979f2",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "Monitor/MQ2Sensor",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 2440,
+        "y": 1820,
+        "wires": [
+            [
+                "0f15b2f1ea507b27",
+                "86e0072fb0d96c32",
+                "b726dfa06baac0fe"
+            ]
+        ]
+    },
+    {
+        "id": "89b4ea075bf364b2",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "Monitor/FlameSensor",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 2450,
+        "y": 1440,
+        "wires": [
+            [
+                "786fcaf1fd025281",
+                "dc66e8e59f9928dd",
+                "95039c38118b0849"
+            ]
+        ]
+    },
+    {
+        "id": "211aa316a676bd21",
+        "type": "ui_gauge",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "0dc8fd6525591396",
+        "order": 1,
+        "width": 5,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Nhiệt độ",
+        "label": "Độ",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 3260,
+        "y": 1160,
+        "wires": []
+    },
+    {
+        "id": "555301f86da9c76e",
+        "type": "ui_gauge",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "53db0b99d31c6d9c",
+        "order": 1,
+        "width": 5,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Nồng độ khói ",
+        "label": "Phần trăm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 3270,
+        "y": 1840,
+        "wires": []
+    },
+    {
+        "id": "9175a170451f5016",
+        "type": "ui_gauge",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "7d6cd194cb12a310",
+        "order": 1,
+        "width": 5,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Cường độ lửa ",
+        "label": "Phần trăm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 3280,
+        "y": 1480,
+        "wires": []
+    },
+    {
+        "id": "786fcaf1fd025281",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hiển thị cường độ lửa",
+        "func": "var Flame = msg.payload.Value;\nmsg.payload = Flame;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2960,
+        "y": 1440,
+        "wires": [
+            [
+                "9175a170451f5016",
+                "1eab7b5d3d2ead40"
+            ]
+        ]
+    },
+    {
+        "id": "0f15b2f1ea507b27",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hiển thị cường độ khói",
+        "func": "var MQ2 = msg.payload.Value;\nmsg.payload = MQ2;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2960,
+        "y": 1820,
+        "wires": [
+            [
+                "555301f86da9c76e",
+                "8d053bf138610fd8"
+            ]
+        ]
+    },
+    {
+        "id": "7ff2d51a62f20d2a",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hiển thị Temperature",
+        "func": "var temp = msg.payload.Temperature;\nmsg.payload = temp;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2920,
+        "y": 1120,
+        "wires": [
+            [
+                "211aa316a676bd21",
+                "066772a89b41f886"
+            ]
+        ]
+    },
+    {
+        "id": "fb98d848607b03da",
+        "type": "ui_toast",
+        "z": "a46b2f276f836896",
+        "position": "top left",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 3290,
+        "y": 1940,
+        "wires": []
+    },
+    {
+        "id": "86e0072fb0d96c32",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Cảnh báo có lửa tại Zone C",
+        "func": "// Đọc giá trị MQ2 từ msg.payload\nvar MQ2 = msg.payload.Value;\n\n// Ngưỡng kiểm tra\nvar threshold = 55;\n\n// Sử dụng biến context để lưu trữ thời gian bắt đầu vượt ngưỡng\nvar startTime = context.get('startTime') || null;\nvar currentTime = new Date().getTime();\n\n// Kiểm tra nếu giá trị vượt ngưỡng\nif (MQ2 > threshold) {\n    if (startTime === null) {\n        // Nếu đây là lần đầu vượt ngưỡng, lưu lại thời gian bắt đầu\n        startTime = currentTime;\n        context.set('startTime', startTime);\n        return null;  // Không gửi thông báo ngay lập tức\n    } else {\n        // Nếu đã vượt ngưỡng trước đó, kiểm tra thời gian đã trôi qua\n        var elapsedTime = currentTime - startTime;\n        if (elapsedTime >= 3000) {  // 3000 ms = 3 giây\n            msg.payload = \"Khu C có cháy\";\n            context.set('notified', true);\n            return msg;\n        } else {\n            // Chưa đủ 3 giây, không gửi thông báo\n            return null;\n        }\n    }\n} else {\n    // Nếu giá trị dưới ngưỡng, reset trạng thái và thời gian\n    context.set('startTime', null);\n    context.set('notified', false);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2980,
+        "y": 1980,
+        "wires": [
+            [
+                "fb98d848607b03da",
+                "7b0ed81fd044ccd1"
+            ]
+        ]
+    },
+    {
+        "id": "7b0ed81fd044ccd1",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 27",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3260,
+        "y": 2020,
+        "wires": []
+    },
+    {
+        "id": "1eab7b5d3d2ead40",
+        "type": "ui_chart",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "7d6cd194cb12a310",
+        "order": 2,
+        "width": 5,
+        "height": 3,
+        "label": "Theo thời gian",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 3280,
+        "y": 1420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8d053bf138610fd8",
+        "type": "ui_chart",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "53db0b99d31c6d9c",
+        "order": 2,
+        "width": 5,
+        "height": 3,
+        "label": "Theo thời gian",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 3280,
+        "y": 1760,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "066772a89b41f886",
+        "type": "ui_chart",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "group": "0dc8fd6525591396",
+        "order": 2,
+        "width": 5,
+        "height": 3,
+        "label": "Theo thời gian",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 3280,
+        "y": 1080,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e181be659b87a4d9",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "Monitor/Parking Status",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 2450,
+        "y": 720,
+        "wires": [
+            [
+                "b84967a40cfe5ae1",
+                "993cc28b68ba941d",
+                "3bc52a61a0817caf",
+                "7c289249da2842a2"
+            ]
+        ]
+    },
+    {
+        "id": "3b8a1063caa33565",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "19444873a9101178",
+        "order": 1,
+        "width": 8,
+        "height": 1,
+        "name": "",
+        "label": "Zone A",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 3300,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "a3e8b3756b57b979",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "19444873a9101178",
+        "order": 2,
+        "width": 8,
+        "height": 1,
+        "name": "",
+        "label": "Zone B",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 3300,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "8bb541992922a1b2",
+        "type": "ui_text",
+        "z": "a46b2f276f836896",
+        "group": "19444873a9101178",
+        "order": 3,
+        "width": 8,
+        "height": 1,
+        "name": "",
+        "label": "Zone C",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 3300,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "b84967a40cfe5ae1",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hiển thị Zone A",
+        "func": "var zoneA = msg.payload.ZoneA;\nmsg.payload = zoneA;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3080,
+        "y": 640,
+        "wires": [
+            [
+                "3b8a1063caa33565"
+            ]
+        ]
+    },
+    {
+        "id": "993cc28b68ba941d",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hiển thị Zone B",
+        "func": "var zoneB = msg.payload.ZoneB;\nmsg.payload = zoneB;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3080,
+        "y": 720,
+        "wires": [
+            [
+                "a3e8b3756b57b979"
+            ]
+        ]
+    },
+    {
+        "id": "3bc52a61a0817caf",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hiển thị Zone C",
+        "func": "var zoneC = msg.payload.ZoneC;\nmsg.payload = zoneC;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3080,
+        "y": 800,
+        "wires": [
+            [
+                "8bb541992922a1b2"
+            ]
+        ]
+    },
+    {
+        "id": "7c289249da2842a2",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 33",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3060,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "e6b6a0bf378ff917",
+        "type": "ui_toast",
+        "z": "a46b2f276f836896",
+        "position": "bottom right",
+        "displayTime": "0",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 3290,
+        "y": 1580,
+        "wires": []
+    },
+    {
+        "id": "49dfdeacc8ae8206",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 34",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3260,
+        "y": 1660,
+        "wires": []
+    },
+    {
+        "id": "dc66e8e59f9928dd",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 35",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2920,
+        "y": 1540,
+        "wires": []
+    },
+    {
+        "id": "48db229fcd57a0ab",
+        "type": "ui_toast",
+        "z": "a46b2f276f836896",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 3290,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "9519904812ba53c6",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Cảnh báo có lửa tại Zone A",
+        "func": "// Đọc giá trị temp từ msg.payload\nvar temp = msg.payload.Temperature;\n\n// Ngưỡng kiểm tra\nvar threshold = 40;\n\n// Sử dụng biến context để lưu trữ thời gian bắt đầu vượt ngưỡng\nvar startTime = context.get('startTime') || null;\nvar currentTime = new Date().getTime();\n\n// Kiểm tra nếu giá trị vượt ngưỡng\nif (temp > threshold) {\n    if (startTime === null) {\n        // Nếu đây là lần đầu vượt ngưỡng, lưu lại thời gian bắt đầu\n        startTime = currentTime;\n        context.set('startTime', startTime);\n        return null;  // Không gửi thông báo ngay lập tức\n    } else {\n        // Nếu đã vượt ngưỡng trước đó, kiểm tra thời gian đã trôi qua\n        var elapsedTime = currentTime - startTime;\n        if (elapsedTime >= 3000) {  // 3000 ms = 3 giây\n            msg.payload = \"Khu A có cháy\";\n            context.set('notified', true);\n            return msg;\n        } else {\n            // Chưa đủ 3 giây, không gửi thông báo\n            return null;\n        }\n    }\n} else {\n    // Nếu giá trị dưới ngưỡng, reset trạng thái và thời gian\n    context.set('startTime', null);\n    context.set('notified', false);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2940,
+        "y": 1260,
+        "wires": [
+            [
+                "48db229fcd57a0ab",
+                "43c464c0d141c23e"
+            ]
+        ]
+    },
+    {
+        "id": "43c464c0d141c23e",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 36",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3260,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "eb3132fd476fc366",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Filter Data cho bảo vệ",
+        "func": "let data = msg.payload;\nlet tableData = [];\n\n// Chuyển đổi dữ liệu Firebase thành định dạng bảng và lọc các giá trị UID null\nfor (let card in data) {\n    if (data.hasOwnProperty(card)) {\n        let entry = data[card].Entry || {};\n        let exit = data[card].Exit || {};\n        let cardInfo = data[card].CardInformation || {};\n        let uid = data[card].UID;\n\n        // Chỉ thêm vào tableData nếu UID không phải là null\n        if (uid && uid !== \"Null\") {\n            tableData.push({\n                Card: card,\n                Balance: data[card].Balance || \"\",\n                CardType: cardInfo.CardType || \"\",\n                BrandOfVehicle: cardInfo.BrandOfVehicle || \"\",\n                Plate: cardInfo.Plate || \"\",\n                TypeOfVehicle: cardInfo.TypeOfVehicle || \"\",\n                EntryDate: entry.Date || \"\",\n                EntryTime: entry.Time || \"\",\n                ExitDate: exit.Date || \"\",\n                ExitTime: exit.Time || \"\",\n                IsVehicleIn: data[card].IsVehicleIn || false,\n                UID: uid\n            });\n        }\n    }\n}\n\nmsg.payload = tableData;\nflow.set('cards', tableData); // Lưu dữ liệu vào context của flow\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1420,
+        "y": 780,
+        "wires": [
+            [
+                "9b2790daab8dadb0"
+            ]
+        ]
+    },
+    {
+        "id": "9b2790daab8dadb0",
+        "type": "ui_table",
+        "z": "a46b2f276f836896",
+        "group": "164f44695170dae1",
+        "name": "Danh sách thẻ cho bảo vệ",
+        "order": 1,
+        "width": "24",
+        "height": 3,
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 1770,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "4480403289b9c627",
+        "type": "firebase.on",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/Cards",
+        "atStart": true,
+        "eventType": "value",
+        "queries": [],
+        "x": 760,
+        "y": 780,
+        "wires": [
+            [
+                "eb3132fd476fc366"
+            ]
+        ]
+    },
+    {
+        "id": "25ebc0febbfe019d",
+        "type": "firebase modify",
+        "z": "a46b2f276f836896",
+        "name": "",
+        "firebaseconfig": "",
+        "childpath": "RFID/Cards",
+        "method": "update",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 1610,
+        "y": 980,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "736042a3db78363b",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Hàm nạp tiền",
+        "func": "let formData = msg.payload;\nlet card = formData.Card;\nlet balance = parseInt(formData.Balance, 10); // Chuyển đổi Balance sang int\n\n// Kiểm tra nếu balance không phải là một số hợp lệ\nif (isNaN(balance)) {\n    balance = 0; // Hoặc xử lý lỗi theo cách khác nếu cần\n}\n// Update Firebase with new information\nlet updatePayload = {};\nupdatePayload[card + \"/Balance\"] = balance;\n\nmsg.payload = updatePayload;\nmsg.database = \"https://parkingsystem-68bbf-default-rtdb.firebaseio.com/\";\nmsg.collection = \"RFID/Cards\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 980,
+        "wires": [
+            [
+                "25ebc0febbfe019d"
+            ]
+        ]
+    },
+    {
+        "id": "546d847476fa00e8",
+        "type": "ui_form",
+        "z": "a46b2f276f836896",
+        "name": "Nạp tiền",
+        "label": "",
+        "group": "d37b94b7c30d9a07",
+        "order": 9,
+        "width": "12",
+        "height": "1",
+        "options": [
+            {
+                "label": "Card",
+                "value": "Card",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Balance",
+                "value": "Balance",
+                "type": "text",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "Card": "",
+            "Balance": ""
+        },
+        "payload": "{}",
+        "submit": "Nạp tiền",
+        "cancel": "Hủy",
+        "topic": "",
+        "topicType": "str",
+        "splitLayout": false,
+        "className": "",
+        "x": 540,
+        "y": 980,
+        "wires": [
+            [
+                "736042a3db78363b"
+            ]
+        ]
+    },
+    {
+        "id": "d89da24ec3ddcb0a",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 37",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2880,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "95039c38118b0849",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Cảnh báo có lửa tại Zone B",
+        "func": "// // Đọc giá trị Flame từ msg.payload\n// var Flame = msg.payload.Value;\n\n// // Ngưỡng kiểm tra\n// var threshold = 55;\n\n// // Sử dụng biến context để lưu trữ thời gian bắt đầu vượt ngưỡng\n// var startTime = context.get('startTime') || null;\n// var currentTime = new Date().getTime();\n\n// // Kiểm tra nếu giá trị vượt ngưỡng\n// if (Flame > threshold) {\n//     if (startTime === null) {\n//         // Nếu đây là lần đầu vượt ngưỡng, lưu lại thời gian bắt đầu\n//         startTime = currentTime;\n//         context.set('startTime', startTime);\n//         return null;  // Không gửi thông báo ngay lập tức\n//     } else {\n//         // Nếu đã vượt ngưỡng trước đó, kiểm tra thời gian đã trôi qua\n//         var elapsedTime = currentTime - startTime;\n//         if (elapsedTime >= 3000) {  // 3000 ms = 3 giây\n//             msg.payload = \"Khu B có cháy\";\n//             context.set('notified', true);\n//             return msg;\n//         } else {\n//             // Chưa đủ 3 giây, không gửi thông báo\n//             return null;\n//         }\n//     }\n// } else {\n//     // Nếu giá trị dưới ngưỡng, reset trạng thái và thời gian\n//     context.set('startTime', null);\n//     context.set('notified', false);\n//     return null;\n// }\n// Đọc giá trị Flame từ msg.payload\nvar Flame = msg.payload.Value;\n\n// Ngưỡng kiểm tra\nvar threshold = 55;\n\n// Sử dụng biến context để lưu trữ thời gian bắt đầu vượt ngưỡng\nvar startTime = context.get('startTime') || null;\nvar currentTime = new Date().getTime();\n\n// Kiểm tra nếu giá trị vượt ngưỡng\nif (Flame > threshold) {\n    if (startTime === null) {\n        // Nếu đây là lần đầu vượt ngưỡng, lưu lại thời gian bắt đầu\n        startTime = currentTime;\n        context.set('startTime', startTime);\n        return null;  // Không gửi thông báo ngay lập tức\n    } else {\n        // Nếu đã vượt ngưỡng trước đó, kiểm tra thời gian đã trôi qua\n        var elapsedTime = currentTime - startTime;\n        if (elapsedTime >= 3000) {  // 3000 ms = 3 giây\n            msg.payload = \"Khu B có cháy\";\n            return msg;  // Luôn gửi thông báo khi đủ 3 giây\n        } else {\n            // Chưa đủ 3 giây, không gửi thông báo\n            return null;\n        }\n    }\n} else {\n    // Nếu giá trị dưới ngưỡng, reset trạng thái và thời gian\n    context.set('startTime', null);\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2980,
+        "y": 1640,
+        "wires": [
+            [
+                "49dfdeacc8ae8206",
+                "e6b6a0bf378ff917"
+            ]
+        ]
+    },
+    {
+        "id": "b726dfa06baac0fe",
+        "type": "debug",
+        "z": "a46b2f276f836896",
+        "name": "debug 38",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2920,
+        "y": 1900,
+        "wires": []
+    },
+    {
+        "id": "search-input",
+        "type": "ui_text_input",
+        "z": "a46b2f276f836896",
+        "name": "Search Plate",
+        "label": "Tìm kiếm",
+        "tooltip": "",
+        "group": "cf3d91626c73b58a",
+        "order": 0,
+        "width": "24",
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "str",
+        "x": 550,
+        "y": 600,
+        "wires": [
+            [
+                "filter-data"
+            ]
+        ]
+    },
+    {
+        "id": "filter-data",
+        "type": "function",
+        "z": "a46b2f276f836896",
+        "name": "Filter Data",
+        "func": "let searchPlate = msg.payload.toLowerCase();\nlet allCards = flow.get('cards') || [];\n\n// Kiểm tra xem allCards có phải là mảng hay không\nif (!Array.isArray(allCards)) {\n    allCards = [];\n}\n\nlet filteredCards = allCards.filter(card => card.Plate.toLowerCase().includes(searchPlate));\nmsg.payload = filteredCards;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1390,
+        "y": 600,
+        "wires": [
+            [
+                "search-table"
+            ]
+        ]
+    },
+    {
+        "id": "search-table",
+        "type": "ui_table",
+        "z": "a46b2f276f836896",
+        "group": "cf3d91626c73b58a",
+        "name": "Search Table",
+        "order": 2,
+        "width": "24",
+        "height": "3",
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 1730,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "7110719768ba989c",
+        "type": "ui_spacer",
+        "z": "a46b2f276f836896",
+        "name": "spacer",
+        "group": "0c800735780aa456",
+        "order": 3,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "84bef03c0a154b94",
+        "type": "ui_spacer",
+        "z": "a46b2f276f836896",
+        "name": "spacer",
+        "group": "2623e65f3637f1aa",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6d396f94f2976ef8",
+        "type": "ui_spacer",
+        "z": "a46b2f276f836896",
+        "name": "spacer",
+        "group": "1f4c667463f47869",
+        "order": 4,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "15a5d5c004e9cf74",
+        "type": "ui_group",
+        "name": "Danh sách thẻ",
+        "tab": "461f2b2f5a559df2",
+        "order": 1,
+        "disp": true,
+        "width": 30,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "cf9a5e5dc2293733",
+        "type": "ui_group",
+        "name": "Nhập thông tin khách hàng",
+        "tab": "77331107d01032bb",
+        "order": 2,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "0c800735780aa456",
+        "type": "ui_group",
+        "name": "Trạng thái thêm thẻ",
+        "tab": "77331107d01032bb",
+        "order": 3,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1f4c667463f47869",
+        "type": "ui_group",
+        "name": "Trạng thái thẻ",
+        "tab": "461f2b2f5a559df2",
+        "order": 4,
+        "disp": true,
+        "width": "8",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2623e65f3637f1aa",
+        "type": "ui_group",
+        "name": "Mở barie",
+        "tab": "461f2b2f5a559df2",
+        "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "4e306d9e897b4333",
+        "type": "ui_group",
+        "name": "Chỉ dẫn khu đỗ xe",
+        "tab": "461f2b2f5a559df2",
+        "order": 3,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "0dc8fd6525591396",
+        "type": "ui_group",
+        "name": "Khu A",
+        "tab": "461f2b2f5a559df2",
+        "order": 6,
+        "disp": true,
+        "width": 10,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "53db0b99d31c6d9c",
+        "type": "ui_group",
+        "name": "Khu C",
+        "tab": "461f2b2f5a559df2",
+        "order": 8,
+        "disp": true,
+        "width": 10,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "7d6cd194cb12a310",
+        "type": "ui_group",
+        "name": "Khu B",
+        "tab": "461f2b2f5a559df2",
+        "order": 7,
+        "disp": true,
+        "width": 10,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "19444873a9101178",
+        "type": "ui_group",
+        "name": "Chỗ trống",
+        "tab": "461f2b2f5a559df2",
+        "order": 2,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "164f44695170dae1",
+        "type": "ui_group",
+        "name": "Danh sách thẻ",
+        "tab": "77331107d01032bb",
+        "order": 1,
+        "disp": true,
+        "width": "24",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "d37b94b7c30d9a07",
+        "type": "ui_group",
+        "name": "Nạp tiền",
+        "tab": "77331107d01032bb",
+        "order": 4,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "cf3d91626c73b58a",
+        "type": "ui_group",
+        "name": "Tìm kiếm biển số",
+        "tab": "77331107d01032bb",
+        "order": 5,
+        "disp": true,
+        "width": "24",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "461f2b2f5a559df2",
+        "type": "ui_tab",
+        "name": "Hệ thống bãi đỗ xe thông minh",
+        "icon": "fa-solid fa-car",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "77331107d01032bb",
+        "type": "ui_tab",
+        "name": "Quản lý thẻ xe",
+        "icon": "fa-solid fa-address-card",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    }
+]
