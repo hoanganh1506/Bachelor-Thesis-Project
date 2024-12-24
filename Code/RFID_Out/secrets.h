@@ -1,0 +1,4 @@
+#define SECRET_WIFI_SSID ""
+#define SECRET_WIFI_PASS ""
+#define SECRET_FIREBASE_HOST ""
+#define SECRET_FIREBASE_AUTH ""
